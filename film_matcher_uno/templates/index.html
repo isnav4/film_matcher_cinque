@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FILM MATCHER</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="main-container">
+        <h1> FILM MATCHER</h1>
+        <p>Write a word !! ONLY ENG(you can try with ITA but it's in progress))</p>
+        
+        <div id="chat-history" class="chat-box">
+            <div class="messaggio bot">Hiii, write a word about cinema and I will suggest you a film !</div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="userinput" placeholder="Es: zombie a milano...">
+            <button id="btnSearch" onclick="manda_richiesta()">STARTA</button>
+        </div>
+    </div>
+
+   <script>
+       
+        let paroleUsate = []; 
+
+        function manda_richiesta() {
+            let input = document.getElementById("userinput");
+            let bottone = document.getElementById("btnSearch"); 
+            
+            if (!input) return;
+            let text = input.value.trim(); 
+            if(!text) return;
+
+            
+            let parolaPulita = text.toLowerCase();
+            
+            if (paroleUsate.includes(parolaPulita)) {
+                
+                addmessaggio(text, "user");
+                input.value = "";
+                
+               
+                addmessaggio("daiii scrivi un'altra parola, questa l'hai già scritta!!", "bot");
+                return; 
+            }
+
+            // Aggiungo la parola alla lista
+            paroleUsate.push(parolaPulita);
+
+            
+            input.disabled = true;       
+            bottone.disabled = true;     
+            bottone.innerText = "...";   
+            bottone.style.backgroundColor = "#555"; 
+            
+            addmessaggio(text, "user");
+            input.value = "";
+
+            let loaderId = addmessaggio("Sto cercando nel database...", "bot");
+
+            fetch('/ask', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({messaggio: text}) 
+            })
+            .then(r => r.json())
+            .then(data => {
+                let loaderDiv = document.getElementById(loaderId);
+                if(loaderDiv) {
+                    loaderDiv.innerHTML = data.risposta;
+                }
+                riabilitaTutto(input, bottone);
+            })
+            .catch(error => {
+                console.error("Errore:", error);
+                let loaderDiv = document.getElementById(loaderId);
+                if(loaderDiv) loaderDiv.innerHTML = "❌ Errore di connessione.";
+                riabilitaTutto(input, bottone);
+            });
+        }
+
+        function riabilitaTutto(input, bottone) {
+            input.disabled = false;
+            bottone.disabled = false;
+            bottone.innerText = "Cerca";
+            bottone.style.backgroundColor = "#007bff"; 
+            input.focus(); 
+        }
+
+        function vote(tipo, film, query, btnElement) {
+            let parent = btnElement.parentElement;
+            parent.innerHTML = "<i>Grazie del feedback! :)</i>"; // Corretto anche l'errore <)
+
+            fetch('/feedback', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    voto: tipo,    
+                    film: film,     
+                    query: query    
+                })
+            })
+            .then(r => r.json())
+            .then(data => { console.log("Feedback salvato"); });
+        }
+
+        function addmessaggio(html, type) {
+            let box = document.getElementById("chat-history");
+            let div = document.createElement("div");
+            let id = "msg-" + Date.now();
+            div.id = id;
+            div.className = "messaggio " + type; 
+            
+            if (type === 'user') {
+                div.textContent = html;
+            } else {
+                div.innerHTML = html;
+            }
+
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight; 
+            return id;
+        }
+        
+        document.getElementById("userinput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                if (!document.getElementById("userinput").disabled) {
+                    manda_richiesta();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
