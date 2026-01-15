@@ -17,7 +17,7 @@
         </div>
 
         <div class="input-area">
-            <input type="text" id="userinput" placeholder="Es: zombie a milano...">
+            <input type="text" id="userinput" placeholder="write a word for me!...">
             <button id="btnSearch" onclick="manda_richiesta()">STARTA</button>
         </div>
     </div>
@@ -47,7 +47,7 @@
                 return; 
             }
 
-            // Aggiungo la parola alla lista
+           
             paroleUsate.push(parolaPulita);
 
             
@@ -59,7 +59,7 @@
             addmessaggio(text, "user");
             input.value = "";
 
-            let loaderId = addmessaggio("Sto cercando nel database...", "bot");
+            let loaderId = addmessaggio("sto cercando nel database...", "bot");
 
             fetch('/ask', {
                 method: 'POST',
@@ -92,7 +92,7 @@
 
         function vote(tipo, film, query, btnElement) {
             let parent = btnElement.parentElement;
-            parent.innerHTML = "<i>Grazie del feedback! :)</i>"; // Corretto anche l'errore <)
+            parent.innerHTML = "<i>Grazie del feedback! :)</i>"; 
 
             fetch('/feedback', {
                 method: 'POST',

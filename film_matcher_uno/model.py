@@ -10,13 +10,13 @@ model = None
 embeddings = None
 
 def init_engine():
-    """Carico i database da INTERNET (Kaggle) + il tuo file LOCALE."""
+    """carico i due database da kaggle e anche il tuo."""
     global df, model, embeddings
-    print("🤖 IL MODELLO: Inizio il download dei dati da Internet...")
+    print("  il modello: inizio il downloaddd")
     
     try:
-        # --- 1. IMDB ---
-        print("📥 IL MODELLO: Scarico IMDB Top 1000...")
+        
+        print("il modello: scarico il dataset IMDB Top 1000...")
         path_imdb = kagglehub.dataset_download("harshitshankhdhar/imdb-dataset-of-top-1000-movies-and-tv-shows")
         csv_imdb = os.path.join(path_imdb, "imdb_top_1000.csv")
         df_imdb = pd.read_csv(csv_imdb)
@@ -25,8 +25,8 @@ def init_engine():
             columns={'Series_Title': 'titolo', 'Overview': 'trama', 'Genre': 'genere'}
         )
 
-        # --- 2. NETFLIX ---
-        print("📥 IL MODELLO: Scarico Netflix...")
+        
+        print("il modello: ora scarico il dataset di Netflix...")
         path_netflix = kagglehub.dataset_download("shivamb/netflix-shows")
         csv_netflix = os.path.join(path_netflix, "netflix_titles.csv")
         df_netflix = pd.read_csv(csv_netflix)
@@ -35,9 +35,9 @@ def init_engine():
             columns={'title': 'titolo', 'description': 'trama', 'listed_in': 'genere'}
         )
 
-        # --- 3. IL TUO DATASET ---
+        
         if os.path.exists("datasetmio.csv"):
-            print("👤 IL MODELLO: Carico il tuo file personale...")
+            print("il modello: wow c'è anche un tuo dataset!! ora lo carico...")
             df_mio = pd.read_csv("datasetmio.csv", sep=None, engine='python')
             
             colonne = df_mio.columns.tolist()
@@ -50,26 +50,26 @@ def init_engine():
             
             df_mio = df_mio[['titolo', 'trama', 'genere']]
             
-            print("🔗 Unisco tutto...")
+            print("adesso provo ad unire tutti i dataset")
             df = pd.concat([df_imdb, df_netflix, df_mio], ignore_index=True)
         else:
-            print("🔗 Unisco solo IMDB + NETFLIX...")
+            print(" il tuo dataset non lo trovo! (oppure non mi piace) ora unisco solo IMDB e NETFLIX")
             df = pd.concat([df_imdb, df_netflix], ignore_index=True)
         
-        # Pulizia
+       
         df = df.dropna(subset=['trama']).drop_duplicates(subset=['titolo'])
-        print(f"✅ Database caricato! Totale film: {len(df)}")
+        print(f" ho caricato il database ! ora conosco ben : {len(df)}film ")
 
         # AI
-        print("🧠 Avvio la rete neurale...")
+        print("ora avvio la mia incredibile(!!) rete neurale...")
         model = SentenceTransformer('all-MiniLM-L6-v2')
         embeddings = model.encode(df['trama'].tolist(), show_progress_bar=True)
         
-        print("🚀 TUTTO PRONTO!")
+        print("ora sono davvero PRONTO!")
         return True
 
     except Exception as e:
-        print(f"❌ ERRORE CRITICO: {e}")
+        print(f"nooooo errore CRITICO: {e}")
         return False
 
 def get_recommendation(user_query):
@@ -79,9 +79,9 @@ def get_recommendation(user_query):
     - Niente messaggi extra di incertezza.
     """
     if df is None or model is None:
-        return {"error": "Sto ancora caricando, pazienta un attimo!"}
+        return {"error": "sto ancora caricando, TU quanto ci metteresti??!"}
 
-    # 1. Calcolo vettori
+   
     query_vec = model.encode([user_query])
     scores = cosine_similarity(query_vec, embeddings)[0]
     
@@ -91,11 +91,11 @@ def get_recommendation(user_query):
     
     film = df.iloc[id_film]
     
-    # 3. Controllo soglia (0.24)
+    
     if alto_score < 0.24:
         return {"found": False}
     
-    # 4. Restituisco il risultato pulito
+    
     return {
         "found": True,
         "titolo": film['titolo'],

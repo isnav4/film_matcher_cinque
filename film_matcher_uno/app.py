@@ -80,7 +80,7 @@ def feedback():
         return jsonify({"status": "ok"})
         
     except Exception as e:
-        print(f"ERRORE: {e}")
+        print(f"errore: {e}")
         return jsonify({"status": "error"}), 500
 
 if __name__ == '__main__':
